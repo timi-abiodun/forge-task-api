@@ -8,15 +8,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasUuids, HasFactory, Notifiable;
+    use HasUuids, HasFactory, HasApiTokens, Notifiable;
 
     protected $fillable = [
         'first_name', 'last_name',
-        'username', 'email',
-        'password',
+        'email', 'password',
     ];
 
     protected $hidden = [
@@ -47,7 +47,7 @@ class User extends Authenticatable
         return $this->hasMany(Task::class, 'assigned_by');
     }
 
-    // Tasks this user has received
+    // Tasks this user has been assigned
     public function receivedTasks(): HasMany
     {
         return $this->hasMany(Task::class, 'assigned_to');

@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Enums\MembershipRole;
+
 
 return new class extends Migration
 {
@@ -19,7 +21,7 @@ return new class extends Migration
 
             $table->unique(['user_id', 'organisation_id']);
             
-            $table->string('role');
+            $table->string('role')->default(MembershipRole::MEMBER->value);
             $table->timestamp('invited_at')->useCurrent();
             $table->timestamps();
         });

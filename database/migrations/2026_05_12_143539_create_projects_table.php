@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Enums\ProjectStatus;
+
 
 return new class extends Migration
 {
@@ -16,7 +18,7 @@ return new class extends Migration
             $table->foreignUuid('organisation_id')->constrained('organisations')->restrictOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('status');
+            $table->string('status')->default(ProjectStatus::PLANNING->value);
             $table->timestamps();
         });
     }
