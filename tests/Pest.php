@@ -18,6 +18,8 @@ pest()->extend(TestCase::class)
  // ->use(RefreshDatabase::class)
     ->in('Feature');
 
+uses(RefreshDatabase::class)->in('Feature'); // This applies it to every test in the Feature folder automatically. No need to add it per file.
+
 /*
 |--------------------------------------------------------------------------
 | Expectations
