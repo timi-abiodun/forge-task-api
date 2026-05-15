@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToOrganisation;
 
 class Task extends Model
 {
-    use HasUuids,HasFactory;
+    use HasUuids,HasFactory, BelongsToOrganisation;
 
     protected $fillable = [
         'name', 'description', 'status', 

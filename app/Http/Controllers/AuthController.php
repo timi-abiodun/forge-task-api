@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Services\RegisterService;
 use App\Services\LoginService;
 use App\Http\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
@@ -37,7 +38,7 @@ class AuthController extends Controller
                 'access_token' => $token,
                 'token_type'   => 'Bearer',
             ],
-        ], 201);
+        ], Response::HTTP_CREATED);
     }
 
     public function login(LoginRequest $request){
@@ -61,6 +62,6 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Logged out successfully'
-            ], 200);
+            ], Response::HTTP_OK);
     }
 }
