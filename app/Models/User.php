@@ -69,4 +69,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Attachment::class, 'uploaded_by');
     }
+
+    // Memberships under the User
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(OrganisationMembership::class, 'user_id');
+    }
 }

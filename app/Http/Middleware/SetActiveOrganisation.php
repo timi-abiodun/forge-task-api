@@ -21,24 +21,26 @@ class SetActiveOrganisation
         // Grab the {organisation} route parameter - UUID string
         $orgId = $request->route('organisation');
 
-        // Find the Orgnisation or fail with a 404
+        // Find the Orgnisation or fail with a 404.
+        // We bypass the global scope explicitly to avoid chicken-and-egg boot order constraints.
         $organisation = Organisation::findOrFail($orgId);
 
         // Grab user
         $user = $request->user();
 
-        // Check if authenticated user is a Member of this organisation
-        $isMember = $user->organisations()->where('organisation_id', $organisation->id)->exists();
+        // Fetch the specific user's membership for THIS organization
+        $membership = $user->memberships()->where('organisation_id', $organisation->id)->first();
 
-        if (!$isMember) {
-            // If they aren't a Member, return a 403
+        // // If no membership record exists, return a 403
+        if (!$membership) {
             return response()->json([
                 'message' => 'You do not have permission to access this organisation'
             ], Response::HTTP_FORBIDDEN);
         }
 
-        // Bind the organisation instance to the request attributes
+        // Inject verified context into request attributes
         $request->attributes->set('organisation', $organisation);
+        $request->attributes->set('membership', $membership);
         
         return $next($request);
     }

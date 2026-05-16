@@ -18,14 +18,25 @@ trait BelongsToOrganisation
             if ($organisation instanceof Organisation) {
                 $builder->where('organisation_id', $organisation->id);
             }
+            else {
+                // Fail closed: No organization found, return no records.
+                $builder->whereNull('id'); 
+            }
         });
 
         // Automatically assign the organisation_id when creating a new record
         static::creating(function (Model $model) {
             $organisation = request()->attributes->get('organisation');
 
-            if ($organisation instanceof Organisation && !$model->organisation_id){
-                $model->organisation_id = $organisation->id;
+            if ($organisation instanceof Organisation) {
+                if (!$model->organisation_id) {
+                    $model->organisation_id = $organisation->id;
+                }
+            } else {
+                // If there's no organization context and no ID manually assigned, block the creation.
+                if (!$model->organisation_id) {
+                    throw new \Exception("Cannot create record: Multi-tenant organization context is missing.");
+                }
             }
         });
     }
