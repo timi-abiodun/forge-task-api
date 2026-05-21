@@ -22,7 +22,7 @@ class SetActiveOrganisation
         $orgId = $request->route('organisation');
 
         // Find the Orgnisation or fail with a 404.
-        // We bypass the global scope explicitly to avoid chicken-and-egg boot order constraints.
+        // We bypass the global scope explicitly to avoid Infinite Recursion.
         $organisation = Organisation::findOrFail($orgId);
 
         // Grab user

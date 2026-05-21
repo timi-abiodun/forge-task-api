@@ -41,4 +41,11 @@ class Project extends Model
         return $this->hasManyThrough(Attachment::class, Task::class);
     }
 
+
+    // public function resolveRouteBinding($value, $field = null)
+    // {
+    //     // Bypasses all global scopes just for URL resolution to see if your policy works
+    //     return $this->withoutGlobalScopes()->where($field ?? $this->getRouteKeyName(), $value)->first();
+    // }
+
 }

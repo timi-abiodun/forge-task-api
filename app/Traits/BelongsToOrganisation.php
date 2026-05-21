@@ -13,6 +13,11 @@ trait BelongsToOrganisation
         // Apply the global scope only if we are in an HTTP request 
         // and have an active organisation set by our middleware.
         static::addGlobalScope('organisation_access', function (Builder $builder){
+            // If we are running in the console or a test runner Arrange step, 
+            // don't apply the restrictive scope unless a request context explicitly exists.
+            if (app()->runningInConsole() && !request()->attributes->has('organisation')) {
+                return;
+            }
             $organisation = request()->attributes->get('organisation');
 
             if ($organisation instanceof Organisation) {
