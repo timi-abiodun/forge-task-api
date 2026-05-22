@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
-use App\Models\Organisation;
 use App\Http\Requests\ProjectRequest;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;

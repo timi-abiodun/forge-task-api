@@ -33,6 +33,10 @@ class User extends Authenticatable
 
     // --- Relationships ---
 
+    /**
+     * Organisations this User belongs to
+     * @return BelongsToMany<Organisation, User, OrganisationMembership>
+     */
     public function organisations(): BelongsToMany
     {
         return $this->belongsToMany(Organisation::class, 'organisation_memberships')
@@ -41,36 +45,55 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
-    // Tasks this user has assigned to others
+    /**
+     * Tasks this user has assigned to others
+     * @return HasMany<Task, User>
+     */
     public function assignedTasks(): HasMany
     {
         return $this->hasMany(Task::class, 'assigned_by');
     }
 
-    // Tasks this user has been assigned
+    /**
+     * Tasks this user has been assigned
+     * @return HasMany<Task, User>
+     */
     public function receivedTasks(): HasMany
     {
         return $this->hasMany(Task::class, 'assigned_to');
     }
 
-    // Invitations this user accepted
+    /**
+     * Invitations this user accepted
+     * @return HasMany<Invitation, User>
+     */
     public function acceptedInvitations(): HasMany
     {
         return $this->hasMany(Invitation::class, 'accepted_by');
     }
 
-    // Invitations this user sent to others
+    /**
+     * Invitations this user sent to others
+     * @return HasMany<Invitation, User>
+     */
     public function sentInvitations(): HasMany
     {
         return $this->hasMany(Invitation::class, 'invited_by');
     }
 
+    /**
+     * Summary of attachments under User
+     * @return HasMany<Attachment, User>
+     */
     public function attachments(): HasMany
     {
         return $this->hasMany(Attachment::class, 'uploaded_by');
     }
 
-    // Memberships under the User
+    /**
+     * Memberships under the User
+     * @return HasMany<Attachment, User>
+     */
     public function memberships(): HasMany
     {
         return $this->hasMany(OrganisationMembership::class, 'user_id');
