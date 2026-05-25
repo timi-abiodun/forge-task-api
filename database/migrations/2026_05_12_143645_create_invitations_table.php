@@ -21,13 +21,14 @@ return new class extends Migration
             $table->foreignUuid('accepted_by')->nullable()->constrained('users')->nullOnDelete();
             
             $table->string('email');
-            $table->unique(['email', 'organisation_id']);
             $table->string('role')->default(MembershipRole::MEMBER->value);
             $table->string('token')->unique();
             $table->string('status')->default(InvitationStatus::PENDING->value);
+            $table->index(['email', 'organisation_id', 'status']);
 
             $table->timestamp('expires_at')->nullable();
             $table->timestamp('accepted_at')->nullable();
+            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
         });
     }

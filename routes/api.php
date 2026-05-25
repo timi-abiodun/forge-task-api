@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\InvitationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
@@ -43,10 +44,19 @@ Route::prefix('v1')->group(function () {
                 Route::get('/tasks/{task}', [TaskController::class, 'show']);
                 Route::put('/tasks/{task}', [TaskController::class, 'update']);
                 Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);
+
+                Route::post('/invitations', [InvitationController::class, 'store']);
+                Route::get('/invitations', [InvitationController::class, 'index']);
+                Route::delete('/invitations/{invitation}', [InvitationController::class,'destroy']);
+                Route::post('/invitations/{invitation}/resend', [InvitationController::class, 'resend']);
         });   
-            
         
     });
+
+    // Public Routes for invitees
+    Route::get('/invitations/{token}', [InvitationController::class, 'retrieve']);
+    Route::post('/invitations/{token}/accept', [InvitationController::class, 'accept']);
+    Route::post('/invitations/{token}/reject', [InvitationController::class, 'reject']);
 });
 
 
