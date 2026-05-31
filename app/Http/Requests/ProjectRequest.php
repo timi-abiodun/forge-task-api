@@ -15,7 +15,7 @@ class ProjectRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // Checks the 'create' gate/policy method against the Project model class
+        // Checks the 'create' policy method against the Project model class
         return $this->user()->can('create', Project::class);
     }
 

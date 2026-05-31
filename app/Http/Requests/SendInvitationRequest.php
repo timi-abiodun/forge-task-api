@@ -4,6 +4,10 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Invitation;
+use App\Enums\MembershipRole;
+use Illuminate\Validation\Rule;
+
 
 class SendInvitationRequest extends FormRequest
 {
@@ -12,7 +16,7 @@ class SendInvitationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can("");
+        return $this->user()->can("create", Invitation::class);
     }
 
     /**
@@ -23,7 +27,8 @@ class SendInvitationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'email' => ['required', 'email', 'max:255'],
+            'role' => ['required', Rule::enum(MembershipRole::class)]
         ];
     }
 }

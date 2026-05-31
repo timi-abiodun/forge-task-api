@@ -54,9 +54,12 @@ Route::prefix('v1')->group(function () {
     });
 
     // Public Routes for invitees
-    Route::get('/invitations/{token}', [InvitationController::class, 'retrieve']);
-    Route::post('/invitations/{token}/accept', [InvitationController::class, 'accept']);
-    Route::post('/invitations/{token}/reject', [InvitationController::class, 'reject']);
+    Route::get('/invitations/{token}', [InvitationController::class, 'retrieve'])
+        ->name('invitations.retrieve');
+    Route::post('/invitations/{token}/accept', [InvitationController::class, 'accept'])
+        ->name('invitations.accept');
+    Route::post('/invitations/{token}/reject', [InvitationController::class, 'reject'])
+        ->name('invitations.reject');
 });
 
 

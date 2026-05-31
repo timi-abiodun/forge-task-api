@@ -19,52 +19,56 @@ class InvitationService
     /**
      * Create a new organization invitation and queue the notification email.
      *
-     * @param  \App\Models\Organisation  $organisation  The organization the user is being invited to.
+     * @param  Organisation  $organisation  The organization the user is being invited to.
      * @param  array{email: string, role: string}  $data  The validated invitation payload containing 'email' and 'role'.
-     * @param  \App\Models\User  $invitedBy  The user generating the invitation.
-     * @return \App\Models\Invitation
+     * @param  User  $invitedBy  The user generating the invitation.
+     * @return Invitation
      *
-     * @throws \Illuminate\Validation\ValidationException If the user is already a member or has a pending invitation.
+     * @throws ValidationException If the user is already a member or has a pending invitation.
      */
     
     public function sendInvitation(Organisation $organisation, array $data, User $invitedBy): Invitation
     {
-        // Check if already member
-        $isMember = $organisation->users()->where('email', $data['email'])->exists();
+        return DB::transaction(function () use ($organisation, $data, $invitedBy) {
+            // Check if already member
+            $isMember = $organisation->users()->where('email', $data['email'])->exists();
 
-        if ($isMember) {
-            throw ValidationException::withMessages([
-                'user'=> ['User is already a member of this organisation'],
-            ]);
-        }
+            if ($isMember) {
+                throw ValidationException::withMessages([
+                    'user'=> ['User is already a member of this organisation'],
+                ]);
+            }
 
-        // Check for pending invitations
-        $activeExists = Invitation::where('organisation_id', $organisation->id)
-            ->where('email', $data['email'])
-            ->where('status', InvitationStatus::PENDING->value)
-            ->where('expires_at', '>', now())
-            ->exists();
+            // Check for pending invitations
+            $activeExists = Invitation::where('organisation_id', $organisation->id)
+                ->where('email', $data['email'])
+                ->where('status', InvitationStatus::PENDING->value)
+                ->where('expires_at', '>', now())
+                ->exists();
 
-        if ($activeExists) {
-            throw ValidationException::withMessages([
-                'invitation'=> ['An active invitation already exists for this email.'],
-            ]);
-        }
+            if ($activeExists) {
+                throw ValidationException::withMessages([
+                    'invitation'=> ['An active invitation already exists for this email.'],
+                ]);
+            }
 
-        // Create the invitation if checks pass
-        $invitation = Invitation::create([
-            'organisation_id' => $organisation->id,
-            'invited_by'      => $invitedBy->id,
-            'email'           => $data['email'],
-            'role'            => $data['role'],
-            'token'           => bin2hex(random_bytes(32)),
-            'expires_at'      => now()->addDays(7),
-            ]);;
+            // Create the invitation if checks pass
+            $invitation = Invitation::create([
+                'organisation_id' => $organisation->id,
+                'invited_by'      => $invitedBy->id,
+                'email'           => $data['email'],
+                'role'            => $data['role'],
+                'token'           => bin2hex(random_bytes(32)),
+                'expires_at'      => now()->addDays(7),
+                ]);;
+            
+            // Fire off the email
+            Mail::to($invitation->email)->queue(new OrganisationInvitationMail($invitation));
+
+            return $invitation;
+
+        });
         
-        // Fire off the email
-        Mail::to($invitation->email)->queue(new OrganisationInvitationMail($invitation));
-
-        return $invitation;
     }
 
 
@@ -78,12 +82,12 @@ class InvitationService
      * organisation membership and updates the invitation status within a database transaction.
      *
      * @param string $token The unique security token associated with the invitation.
-     * @return \App\Models\OrganisationMembership The newly created membership instance.
+     * @return OrganisationMembership The newly created membership instance.
      *
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      *         If the token does not match any invitation.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      *         If the invitation has already been processed or expired.
      */
 
@@ -139,4 +143,21 @@ class InvitationService
         });
         
     }
+
+    /**
+     * Retrieve a paginated list of pending invitations for a specific organisation.
+     *
+     * @param string $organisationId The UUID of the organisation.
+     * @return \Illuminate\Pagination\LengthAwarePaginator<Invitation>
+     */
+    public function getInvitationList(string $organisationId): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        return Invitation::query()
+            ->with(['organisation:id,name'])
+            ->where('organisation_id', $organisationId)
+            ->where('status', InvitationStatus::PENDING)
+            ->latest()
+            ->paginate(10);
+    }
+
 }
