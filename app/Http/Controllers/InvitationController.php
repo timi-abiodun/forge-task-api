@@ -68,9 +68,10 @@ class InvitationController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Invitation $invitation)
+    public function destroy($organisation, Invitation $invitation)
     {
         $this->authorize("update", $invitation);
+        
         // check if the invitation is still pending
         if ($invitation->status !== InvitationStatus::PENDING) {
             return response()->json(['message' => 'Only pending invitations can be revoked.'], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -85,7 +86,7 @@ class InvitationController extends Controller
      * 
      *  @return \Illuminate\Http\JsonResponse
      */
-    public function resend(Invitation $invitation)
+    public function resend($organisation,Invitation $invitation)
     {
         $this->authorize("update", $invitation);
 

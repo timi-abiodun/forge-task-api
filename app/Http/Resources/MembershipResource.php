@@ -17,7 +17,7 @@ class MembershipResource extends JsonResource
         return [
             'id' => $this->id,
             'role' => $this->role,
-            'invited_at' => $this->invited_at->toIso8601String(),
+            'invited_at' => $this->invited_at ? $this->invited_at->toIso8601String() : null,
         ];
     }
 }
