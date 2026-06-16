@@ -11,7 +11,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class OrganisationInvitationMail extends Mailable
+class OrganisationInvitationMail extends Mailable implements ShouldQueue 
 {
     use Queueable, SerializesModels;
 

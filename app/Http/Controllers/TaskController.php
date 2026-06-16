@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TaskCreated;
+use App\Events\TaskReassigned;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use App\Http\Requests\TaskRequest;
@@ -26,6 +28,8 @@ class TaskController extends Controller
     {
         $data = $request->validated();
         $task = Task::create($data);
+
+        TaskCreated::dispatch($task, $request->user());
         
         return response()->json($task, Response::HTTP_CREATED);
     }
@@ -47,7 +51,14 @@ class TaskController extends Controller
     public function update(UpdateTaskRequest $request, $organisation, Task $task): JsonResponse
     {
         $data = $request->validated();
+        $previousAssignedTo = $task->assigned_to;
+
         $task->update($data);
+
+        // Fire TaskReassigned only if assigned_to changed
+        if ($task->assigned_to !== $previousAssignedTo) {
+            TaskReassigned::dispatch($task, $request->user());
+        }
 
         return response()->json($task, Response::HTTP_OK);
     }
