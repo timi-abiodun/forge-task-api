@@ -11,7 +11,14 @@ class AttachmentPolicy
 {
     use ChecksOrganisationRole;
     
-    
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        $membership = request()->attributes->get('membership');
+        return $membership !== null;
+    }
 
     /**
      * Determine whether the user can view the model.
@@ -27,33 +34,21 @@ class AttachmentPolicy
             return false;
         }
 
-        return $attachment->task?->project?->organisation_id === $currentOrg->id;
+        return $attachment->task->project->organisation_id === $currentOrg->id;
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, Attachment $attachment): bool
+    public function create(User $user, Task $task): bool
     {
-        if (!$this->view($user, $attachment)) {
+        $currentOrg = request()->attributes->get("organisation");
+        if (!$currentOrg || $task->project->organisation_id !== $currentOrg->id) { 
             return false;
         }
         return $this->hasAdministrativeAccess() 
-            || $attachment->task->assigned_to === $user->id 
-            || $attachment->task->assigned_by === $user->id;
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Attachment $attachment): bool
-    {
-        if (!$this->view($user, $attachment)) {
-            return false;
-        }
-        return $this->hasAdministrativeAccess() 
-            || $attachment->task->assigned_to === $user->id 
-            || $attachment->task->assigned_by === $user->id;
+            || $task->assigned_to === $user->id 
+            || $task->assigned_by === $user->id;
     }
 
     /**
@@ -61,6 +56,7 @@ class AttachmentPolicy
      */
     public function delete(User $user, Attachment $attachment): bool
     {
-        return $this->hasAdministrativeAccess() && $this->view($user, $attachment);
+       return $this->view($user, $attachment) 
+            && ($this->hasAdministrativeAccess() || $attachment->uploaded_by === $user->id);
     }
 }
