@@ -15,7 +15,7 @@ class Project extends Model
 {
     use HasUuids, HasFactory, BelongsToOrganisation;
 
-    protected $fillable = ['name', 'description', 'status'];
+    protected $fillable = ['name', 'description', 'status', 'organisation_id', 'created_by', 'updated_by'];
 
     protected $casts = [
         'status' => ProjectStatus::class,
@@ -29,7 +29,9 @@ class Project extends Model
         return $this->belongsTo(Organisation::class, 'organisation_id');
     }
     
-    // Tasks under project
+    /**
+     *  Tasks under project
+     * */ 
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class, 'project_id');
