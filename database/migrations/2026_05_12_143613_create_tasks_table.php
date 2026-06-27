@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('status')->default(TaskStatus::TODO->value);
             
-            $table->timestamp('due_date')->nullable();
+            $table->timestampTz('due_date')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
         });
