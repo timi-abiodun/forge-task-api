@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Task;
 use App\Models\User;
+use App\Models\Project;
 use App\Traits\ChecksOrganisationRole;
 
 
@@ -16,6 +17,7 @@ class TaskPolicy
      */
     public function viewAny(User $user): bool
     {
+        // A user can view tasks if they are a member of the current organisation context.
         $membership = request()->attributes->get('membership');
         return $membership !== null;
     }
@@ -25,16 +27,15 @@ class TaskPolicy
      */
     public function view(User $user, Task $task): bool
     {
-        // A user can only view a Task if it belongs 
-        // to the current organisation context.
         $currentOrg = request()->attributes->get("organisation");
 
-        // Fail-safe check if middleware didn't run or missing context
         if (!$currentOrg) {
             return false;
         }
 
-        return $task->project->organisation_id === $currentOrg->id;
+        $project = Project::withoutGlobalScopes()->find($task->project_id);
+
+        return $project && $project->organisation_id === $currentOrg->id;
     }
 
     /**
@@ -74,6 +75,9 @@ class TaskPolicy
      */
     public function restore(User $user, Task $task): bool
     {
+        if (!$this->view($user, $task)) {
+            return false;
+        }
         return $this->hasAdministrativeAccess() || $task->assigned_by === $user->id;
     }
 
@@ -82,6 +86,9 @@ class TaskPolicy
      */
     public function forceDelete(User $user, Task $task): bool
     {
+        if (!$this->view($user, $task)) {
+            return false;
+        }
         return $this->hasAdministrativeAccess() || $task->assigned_by === $user->id;
     }
 }
