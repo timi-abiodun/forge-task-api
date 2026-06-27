@@ -13,8 +13,9 @@ class ProjectController extends Controller
     /**
      * Display a paginated listing of the organization's projects.
      */
-    public function index(): JsonResponse
+    public function index(Project $project): JsonResponse
     {
+        $this->authorize('viewAny', $project);
         // Global scope applies, but paginate() prevents memory crashes
         return response()->json(Project::paginate(15));
     }

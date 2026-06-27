@@ -39,7 +39,7 @@ class Task extends Model
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
-    // Project this task belongs to
+    /** Project this task belongs to */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');
@@ -49,5 +49,11 @@ class Task extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(Attachment::class, 'task_id');
+    }
+
+    // Reminder records created when the scheduler sends a task reminder
+    public function reminders(): HasMany
+    {
+        return $this->hasMany(TaskReminder::class, 'task_id');
     }
 }

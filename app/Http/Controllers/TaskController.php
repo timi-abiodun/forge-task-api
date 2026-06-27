@@ -17,7 +17,7 @@ class TaskController extends Controller
      */
     public function index(): JsonResponse
     {
-        // Global scope applies, but paginate() prevents memory crashes
+        $this->authorize('viewAny', Task::class);
         return response()->json(Task::paginate(15));
     }
 
