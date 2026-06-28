@@ -66,7 +66,7 @@ class AttachmentController extends Controller
     /**
      * Download the specified Attachment.
      */
-    public function download($orgainsation, Task $task, Attachment $attachment): Response
+    public function download($organisation, Task $task, Attachment $attachment): Response
     {
         // Ensure the attachment belongs to the specified task
         abort_if($attachment->task_id !== $task->id, 404);
