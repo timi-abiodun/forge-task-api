@@ -1,26 +1,30 @@
 # Forge Task API
 
-Forge Task API is a Laravel-based backend for managing organisations, projects, tasks, attachments, and invitation-driven onboarding. It is designed as an API-first application with Sanctum authentication, role-aware organisation context, and file handling for task attachments.
+Forge Task API is a Laravel-based backend for managing organisations, projects, tasks, attachments, and invitation-driven onboarding. It is built as an API-first application with Sanctum authentication, organisation-aware access control, and a documented OpenAPI surface for consumers.
 
-## What It Does
+## Overview
 
-- Authenticates users with Laravel Sanctum token auth.
-- Lets users create and manage organisations, projects, and tasks.
-- Supports task attachments with upload, download, list, and delete flows.
-- Sends organisation invitations by email and allows invite acceptance or rejection through public token endpoints.
-- Tracks organisation membership roles and invitation lifecycle states with enums.
-- Sends task notifications and reminders through queued mail and notification jobs.
+- Authenticates users with Laravel Sanctum bearer tokens.
+- Lets users create and manage organisations, projects, tasks, and attachments.
+- Sends organisation invitations by email and supports public accept and reject flows.
+- Sends task notifications and reminders through queued mail and notifications.
+- Exposes Swagger UI and an OpenAPI document for interactive API exploration.
 
-## Core Domain Model
+## API Docs
+
+- Swagger UI: `/api/docs`
+- OpenAPI JSON: `/openapi.json`
+
+The OpenAPI schema documents the public API contract, including authentication, organisation-scoped endpoints, and invitation lifecycle fields such as `accepted_by`.
+
+## Domain Notes
 
 - Organisations own projects, tasks, memberships, and invitations.
-- Projects use status values such as `planning`, `active`, `on_hold`, `completed`, and `cancelled`.
-- Tasks use status values such as `todo`, `in_progress`, `blocked`, `review`, and `completed`.
+- Project, task, and invitation statuses are application-defined enum values rather than free-form strings.
 - Membership roles are enum-based, and organisation admins or owners are used for elevated access.
-- Invitations are tracked with statuses such as `pending`, `accepted`, `declined`, `expired`, and `revoked`.
-- Accepted invitations record the user in the `accepted_by` field.
+- Accepted invitations record the user in the `accepted_by` field and also store the acceptance timestamp.
 
-## API Highlights
+## API Surface
 
 Base route prefix: `/api/v1`
 
@@ -91,6 +95,7 @@ That starts the Laravel server, queue listener, and Vite dev server together.
 - Configure mail so organisation invitations can be delivered.
 - Configure the filesystem disk used for attachments in `config/attachments.php` and the related filesystem settings.
 - Sanctum is used for API authentication, so clients should send the issued bearer token on protected requests.
+- The API documentation is served from the public Swagger UI bundle, so keep `public/openapi.json` and `public/swagger-ui/` in sync when the contract changes.
 
 ## Testing
 
@@ -108,9 +113,3 @@ php artisan test
 ## License
 
 This project is licensed under the MIT license.
-
-
-
-
-change all status to user defined. 
-review the acepted by field in the invitation table.
