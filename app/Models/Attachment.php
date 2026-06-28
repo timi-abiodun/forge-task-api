@@ -13,7 +13,7 @@ class Attachment extends Model
 
     protected $fillable = [
         'file_name', 'file_path', 'file_disk',
-        'mime_type', 'file_size',
+        'mime_type', 'file_size', 'task_id', 'uploaded_by'
     ];
 
     protected $casts = [

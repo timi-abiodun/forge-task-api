@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Attachment;
 use App\Models\User;
 use App\Models\Task;
+use App\Models\Project;
 use App\Traits\ChecksOrganisationRole;
 
 class AttachmentPolicy
@@ -27,14 +28,16 @@ class AttachmentPolicy
     {
         // A user can only view a Attachment if it belongs 
         // to the current organisation context.
-        $currentOrg = request()->attributes->get("organisation");
+        $currentOrg = request()->attributes->get('organisation');
 
-        // Fail-safe check if middleware didn't run or missing context
-        if (!$currentOrg) {
+        if (! $currentOrg) {
             return false;
         }
 
-        return $attachment->task->project->organisation_id === $currentOrg->id;
+        // Bypass tenant scopes to verify the project's actual organisation.
+        $project = Project::withoutGlobalScopes()->find($attachment->task->project_id);
+
+        return $project && $project->organisation_id === $currentOrg->id;
     }
 
     /**
@@ -42,12 +45,23 @@ class AttachmentPolicy
      */
     public function create(User $user, Task $task): bool
     {
-        $currentOrg = request()->attributes->get("organisation");
-        if (!$currentOrg || $task->project->organisation_id !== $currentOrg->id) { 
+        $currentOrg = request()->attributes->get('organisation');
+
+        if (! $currentOrg) {
             return false;
         }
-        return $this->hasAdministrativeAccess() 
-            || $task->assigned_to === $user->id 
+
+        // Load project without tenant scopes to avoid null when task belongs to another org.
+        $project = Project::withoutGlobalScopes()->find($task->project_id);
+
+        // Deny access if the task has no project or belongs to a different
+        // organisation than the active request context.
+        if (! $project || $project->organisation_id !== $currentOrg->id) {
+            return false;
+        }
+
+        return $this->hasAdministrativeAccess()
+            || $task->assigned_to === $user->id
             || $task->assigned_by === $user->id;
     }
 

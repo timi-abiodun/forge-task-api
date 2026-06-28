@@ -14,7 +14,7 @@ class AttachmentController extends Controller
     /**
      * Display a paginated listing of the organization's attachments.
      */
-    public function index(Task $task): JsonResponse
+    public function index($organisation, Task $task): JsonResponse
     {
         $this->authorize('viewAny', [Attachment::class, $task]);
         return response()->json($task->attachments()->paginate(15), Response::HTTP_OK);
@@ -23,7 +23,7 @@ class AttachmentController extends Controller
     /**
      * Store a newly created Attachment in storage.
      */
-    public function store(StoreAttachmentRequest $request, Task $task): JsonResponse
+    public function store(StoreAttachmentRequest $request, $organisation, Task $task): JsonResponse
     {
         $this->authorize('create', [Attachment::class, $task]);
 
@@ -52,7 +52,7 @@ class AttachmentController extends Controller
     /**
      * Display the specified Attachment.
      */
-    public function show(Task $task, Attachment $attachment): JsonResponse
+    public function show($organisation, Task $task, Attachment $attachment): JsonResponse
     {
         // Ensure the attachment belongs to the specified task
         abort_if($attachment->task_id !== $task->id, 404);
@@ -66,7 +66,7 @@ class AttachmentController extends Controller
     /**
      * Download the specified Attachment.
      */
-    public function download(Task $task, Attachment $attachment): Response
+    public function download($orgainsation, Task $task, Attachment $attachment): Response
     {
         // Ensure the attachment belongs to the specified task
         abort_if($attachment->task_id !== $task->id, 404);
@@ -105,7 +105,7 @@ class AttachmentController extends Controller
     /**
      * Remove the specified Attachment from storage.
      */
-    public function destroy(Task $task, Attachment $attachment): JsonResponse
+    public function destroy($organisation, Task $task, Attachment $attachment): JsonResponse
     {
         // Ensure the attachment belongs to the specified task
         abort_if($attachment->task_id !== $task->id, 404);
