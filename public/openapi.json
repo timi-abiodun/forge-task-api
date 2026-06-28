@@ -1,0 +1,773 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Forge Task API",
+    "version": "1.0.0",
+    "description": "Laravel API (Sanctum) for organisations, projects, tasks, attachments, and invitation-driven onboarding."
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Local API base"
+    }
+  ],
+  "tags": [
+    { "name": "Auth" },
+    { "name": "Organisations" },
+    { "name": "Projects" },
+    { "name": "Tasks" },
+    { "name": "Attachments" },
+    { "name": "Invitations" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Sanctum access token. Send as: Authorization: Bearer <token>."
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "first_name": { "type": "string" },
+          "last_name": { "type": "string" },
+          "email": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "Organisation": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "organisation_id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["planning", "active", "on_hold", "completed", "cancelled"]
+          },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": true
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "project_id": { "type": "string" },
+          "assigned_by": { "type": "string", "nullable": true },
+          "assigned_to": { "type": "string", "nullable": true },
+          "name": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "status": {
+            "type": "string",
+            "enum": ["todo", "in_progress", "blocked", "review", "completed"]
+          },
+          "due_date": { "type": "string", "format": "date-time", "nullable": true },
+          "completed_at": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "additionalProperties": true
+      },
+      "Attachment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "task_id": { "type": "string" },
+          "file_name": { "type": "string" },
+          "file_path": { "type": "string" },
+          "file_disk": { "type": "string" },
+          "mime_type": { "type": "string" },
+          "file_size": { "type": "integer" },
+          "uploaded_by": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": true
+      },
+      "Invitation": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "organisation_id": { "type": "string" },
+          "invited_by": { "type": "string" },
+          "accepted_by": { "type": "string", "nullable": true, "description": "User id that accepted the invite" },
+          "email": { "type": "string" },
+          "role": {
+            "type": "string",
+            "enum": ["owner", "admin", "member", "viewer"]
+          },
+          "token": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "accepted", "declined", "expired", "revoked"]
+          },
+          "expires_at": { "type": "string", "format": "date-time" },
+          "accepted_at": { "type": "string", "format": "date-time", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": true
+      },
+      "Membership": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "organisation_id": { "type": "string" },
+          "user_id": { "type": "string" },
+          "role": {
+            "type": "string",
+            "enum": ["owner", "admin", "member", "viewer"]
+          },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": true
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "errors": { "type": "object", "additionalProperties": true }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "paths": {
+    "/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["first_name", "last_name", "email", "password", "organisation_name"],
+                "properties": {
+                  "first_name": { "type": "string" },
+                  "last_name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 8 },
+                  "organisation_name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": { "$ref": "#/components/schemas/User" },
+                    "organisation": { "$ref": "#/components/schemas/Organisation" },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "access_token": { "type": "string" },
+                        "token_type": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 8 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": { "$ref": "#/components/schemas/User" },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "access_token": { "type": "string" },
+                        "token_type": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string" } } } }
+            }
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Current user",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } }
+        }
+      }
+    },
+
+    "/organisations/{organisation}/projects": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "List projects (org-scoped)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Project" } },
+                    "current_page": { "type": "integer" },
+                    "per_page": { "type": "integer" }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Create project (org-scoped)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "status": { "type": "string", "enum": ["planning", "active", "on_hold", "completed", "cancelled"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Project" } } } }
+        }
+      }
+    },
+
+    "/organisations/{organisation}/projects/{project}": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get project",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "project", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Project" } } } },
+          "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "put": {
+        "tags": ["Projects"],
+        "summary": "Update project",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "project", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "status": { "type": "string", "enum": ["planning", "active", "on_hold", "completed", "cancelled"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Project" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Projects"],
+        "summary": "Delete project",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "project", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "204": { "description": "No content" }
+        }
+      }
+    },
+
+    "/organisations/{organisation}/tasks": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "List tasks (org-scoped)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Task" } },
+                    "current_page": { "type": "integer" },
+                    "per_page": { "type": "integer" }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Tasks"],
+        "summary": "Create task (org-scoped)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["project_id", "name"],
+                "properties": {
+                  "project_id": { "type": "string", "format": "uuid" },
+                  "assigned_by": { "type": "string", "format": "uuid", "nullable": true },
+                  "assigned_to": { "type": "string", "format": "uuid", "nullable": true },
+                  "name": { "type": "string" },
+                  "description": { "type": "string", "nullable": true },
+                  "status": { "type": "string", "enum": ["todo", "in_progress", "blocked", "review", "completed"] },
+                  "due_date": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Task" } } } }
+        }
+      }
+    },
+
+    "/organisations/{organisation}/tasks/{task}": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "Get task",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Task" } } } }
+        }
+      },
+      "put": {
+        "tags": ["Tasks"],
+        "summary": "Update task",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "assigned_by": { "type": "string", "format": "uuid", "nullable": true },
+                  "assigned_to": { "type": "string", "format": "uuid", "nullable": true },
+                  "name": { "type": "string" },
+                  "description": { "type": "string", "nullable": true },
+                  "status": { "type": "string", "enum": ["todo", "in_progress", "blocked", "review", "completed"] },
+                  "due_date": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Task" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Tasks"],
+        "summary": "Delete task",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "204": { "description": "No content" }
+        }
+      }
+    },
+
+    "/organisations/{organisation}/tasks/{task}/attachments": {
+      "get": {
+        "tags": ["Attachments"],
+        "summary": "List attachments for a task",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Attachment" } }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Attachments"],
+        "summary": "Upload attachment",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["attachment"],
+                "properties": {
+                  "attachment": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "PDF/DOC/DOCX/XLS/XLSX/CSV/PNG/JPG/GIF/ZIP/TXT (max 10MB)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Attachment" } } } }
+        }
+      }
+    },
+
+    "/organisations/{organisation}/tasks/{task}/attachments/{attachment}": {
+      "get": {
+        "tags": ["Attachments"],
+        "summary": "Get attachment",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "attachment", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Attachment" } } } },
+          "404": { "description": "Not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Attachments"],
+        "summary": "Delete attachment",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "attachment", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "204": { "description": "No content" }
+        }
+      }
+    },
+
+    "/organisations/{organisation}/tasks/{task}/attachments/{attachment}/download": {
+      "get": {
+        "tags": ["Attachments"],
+        "summary": "Download attachment file",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "attachment", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "File download or redirect to signed URL",
+            "content": {
+              "application/octet-stream": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+
+    "/organisations/{organisation}/invitations": {
+      "get": {
+        "tags": ["Invitations"],
+        "summary": "List invitations (admin only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "invitation": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Invitation" }
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Invitations"],
+        "summary": "Create invitation (admin only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "role"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "role": { "type": "string", "enum": ["owner", "admin", "member", "viewer"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "invitation": { "$ref": "#/components/schemas/Invitation" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/organisations/{organisation}/invitations/{invitation}": {
+      "delete": {
+        "tags": ["Invitations"],
+        "summary": "Revoke invitation (admin only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "invitation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "422": { "description": "Unprocessable entity" }
+        }
+      }
+    },
+
+    "/organisations/{organisation}/invitations/{invitation}/resend": {
+      "post": {
+        "tags": ["Invitations"],
+        "summary": "Resend invitation email (admin only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "invitation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "422": { "description": "Unprocessable entity" }
+        }
+      }
+    },
+
+    "/invitations/{token}": {
+      "get": {
+        "tags": ["Invitations"],
+        "summary": "Get invitation details by token (public)",
+        "parameters": [
+          { "name": "token", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "invitation": { "$ref": "#/components/schemas/Invitation" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+
+    "/invitations/{token}/accept": {
+      "post": {
+        "tags": ["Invitations"],
+        "summary": "Accept invitation (public)",
+        "parameters": [
+          { "name": "token", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "membership": { "$ref": "#/components/schemas/Membership" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/invitations/{token}/reject": {
+      "post": {
+        "tags": ["Invitations"],
+        "summary": "Reject invitation (public)",
+        "parameters": [
+          { "name": "token", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    }
+  }
+}
+
