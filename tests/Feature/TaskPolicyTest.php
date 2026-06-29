@@ -321,3 +321,35 @@ test("assigner can update restricted task fields", function () {
         'name' => 'Changed Name',
     ]);
 });
+
+test('member only receives tasks from their own organisation', function () {
+    // Arrange: two separate organisations
+    $orgA = Organisation::factory()->create();
+    $orgB = Organisation::factory()->create();
+
+    // A user who belongs to orgA only
+    $userA = User::factory()->create();
+    $orgA->users()->attach($userA, ['role' => MembershipRole::MEMBER]);
+
+    // Create projects in each org
+    $projectA = Project::factory()->create(['organisation_id' => $orgA->id]);
+    $projectB = Project::factory()->create(['organisation_id' => $orgB->id]);
+
+    // Create one task in each org
+    $taskA = Task::factory()->create(['project_id' => $projectA->id]);
+    $taskB = Task::factory()->create(['project_id' => $projectB->id]);
+
+    // Act: user from orgA fetches orgA tasks list
+    Sanctum::actingAs($userA);
+    $response = $this->getJson("/api/v1/organisations/{$orgA->id}/tasks");
+
+    // Assert
+    $response->assertStatus(Response::HTTP_OK);
+
+    // Response should include orgA task...
+    $response->assertJsonFragment(['id' => $taskA->id]);
+
+    // ...and must not include orgB task.
+    $response->assertJsonMissing(['id' => $taskB->id]);
+});
+

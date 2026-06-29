@@ -16,10 +16,17 @@ class TaskController extends Controller
      * Display a paginated listing of the organization's Tasks.
      */
     public function index(): JsonResponse
-    {
-        $this->authorize('viewAny', Task::class);
-        return response()->json(Task::paginate(15));
-    }
+{
+    $this->authorize('viewAny', Task::class);
+    
+    $organisation = request()->attributes->get('organisation');
+    
+    $tasks = Task::whereHas('project', fn($q) => 
+        $q->where('organisation_id', $organisation->id)
+    )->paginate(15);
+    
+    return response()->json($tasks);
+}
 
     /**
      * Store a newly created Task in storage.
