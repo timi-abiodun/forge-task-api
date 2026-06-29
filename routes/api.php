@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\OrganisationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
@@ -28,6 +29,12 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/logout', [AuthController::class, 'logout'])
             ->name('auth.logout');
+
+        Route::get('/organisations', [OrganisationController::class, 'index']);
+        Route::post('/organisations', [OrganisationController::class, 'store']);
+        Route::get('/organisations/{organisation}', [OrganisationController::class, 'show']);
+        Route::put('/organisations/{organisation}', [OrganisationController::class, 'update']);
+        Route::delete('/organisations/{organisation}', [OrganisationController::class, 'destroy']);
 
         // Organisation-specific routes
         // This nesting ensures we know WHO the user is before checking their ORG
