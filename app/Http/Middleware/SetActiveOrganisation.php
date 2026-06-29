@@ -19,11 +19,11 @@ class SetActiveOrganisation
     public function handle(Request $request, Closure $next): Response
     {
         // Grab the {organisation} route parameter - UUID string
-        $orgId = $request->route('organisation');
+        $organisation = $request->route('organisation');
 
-        // Find the Orgnisation or fail with a 404.
-        // We bypass the global scope explicitly to avoid Infinite Recursion.
-        $organisation = Organisation::findOrFail($orgId);
+        if (!$organisation instanceof Organisation) {
+            $organisation = Organisation::findOrFail($organisation);
+        }
 
         // Grab user
         $user = $request->user();

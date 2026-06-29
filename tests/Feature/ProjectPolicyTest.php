@@ -131,7 +131,7 @@ test("admin can delete a project", function () {
     $response->assertStatus(Response::HTTP_NO_CONTENT);
 });
 
-test('member only receives projects from their own organisation', function () {
+test("member only receives projects from their own organisation", function () {
     // Arrange: two separate organisations
     $orgA = Organisation::factory()->create();
     $orgB = Organisation::factory()->create();

@@ -32,15 +32,16 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/organisations', [OrganisationController::class, 'index']);
         Route::post('/organisations', [OrganisationController::class, 'store']);
-        Route::get('/organisations/{organisation}', [OrganisationController::class, 'show']);
-        Route::put('/organisations/{organisation}', [OrganisationController::class, 'update']);
-        Route::delete('/organisations/{organisation}', [OrganisationController::class, 'destroy']);
 
         // Organisation-specific routes
         // This nesting ensures we know WHO the user is before checking their ORG
         Route::prefix('/organisations/{organisation}')
             ->middleware('org_context')
             ->group(function () {
+                Route::get('/', [OrganisationController::class, 'show']);
+                Route::put('/', [OrganisationController::class, 'update']);
+                Route::delete('/', [OrganisationController::class, 'destroy']);
+
                 Route::get('/projects', [ProjectController::class, 'index']);
                 Route::post('/projects', [ProjectController::class, 'store']);
                 Route::get('/projects/{project}', [ProjectController::class, 'show']);
