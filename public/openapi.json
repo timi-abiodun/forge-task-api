@@ -265,6 +265,117 @@
       }
     },
 
+    "/organisations": {
+      "get": {
+        "tags": ["Organisations"],
+        "summary": "List organisations (authenticated, membership required)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Organisation" } },
+                    "current_page": { "type": "integer" },
+                    "per_page": { "type": "integer" }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": { "description": "Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["Organisations"],
+        "summary": "Create organisation",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "maxLength": 255 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Membership" }
+              }
+            }
+          },
+          "422": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+
+    "/organisations/{organisation}": {
+      "get": {
+        "tags": ["Organisations"],
+        "summary": "Get organisation",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Organisation" } } } },
+          "403": { "description": "Forbidden" }
+        }
+      },
+      "put": {
+        "tags": ["Organisations"],
+        "summary": "Update organisation (admin/owner)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "maxLength": 255 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Organisation" } } } },
+          "403": { "description": "Forbidden" },
+          "422": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Organisations"],
+        "summary": "Delete organisation (owner only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "organisation", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "204": { "description": "No content" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+
     "/organisations/{organisation}/projects": {
       "get": {
         "tags": ["Projects"],
