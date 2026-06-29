@@ -16,8 +16,11 @@ class ProjectController extends Controller
     public function index(Project $project): JsonResponse
     {
         $this->authorize('viewAny', $project);
-        // Global scope applies, but paginate() prevents memory crashes
-        return response()->json(Project::paginate(15));
+        $organisation = request()->attributes->get('organisation');
+
+        $projects = Project::where('organisation_id', $organisation->id)->paginate(15);
+
+        return response()->json($projects);
     }
 
     /**
