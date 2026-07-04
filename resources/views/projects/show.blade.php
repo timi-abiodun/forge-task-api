@@ -1,0 +1,54 @@
+@extends('layouts.app')
+
+@section('title', $project->name)
+
+@section('content')
+@if (session('status'))
+    <div class="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded">
+        {{ session('status') }}
+    </div>
+@endif
+
+<div class="bg-white p-8 rounded-lg border border-gray-200 mb-6">
+    <div class="flex justify-between items-start">
+        <div>
+            <h1 class="text-xl font-semibold text-gray-900">{{ $project->name }}</h1>
+            @if ($project->description)
+                <p class="text-gray-600 mt-2">{{ $project->description }}</p>
+            @endif
+            <span class="inline-block mt-3 text-xs uppercase tracking-wide text-gray-500">
+                {{ $project->status?->value ?? '—' }}
+            </span>
+        </div>
+
+        <div class="flex gap-2">
+            <a
+                href="{{ route('projects.edit', $project) }}"
+                class="text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded px-3 py-1.5"
+            >
+                Edit
+            </a>
+            <form method="POST" action="{{ route('projects.destroy', $project) }}" onsubmit="return confirm('Delete this project?')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="text-sm text-red-600 hover:text-red-800 border border-red-200 rounded px-3 py-1.5">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white p-8 rounded-lg border border-gray-200">
+    <h2 class="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Tasks</h2>
+
+    {{-- NOTE: assumes Task has a `title` field - unverified, adjust if wrong --}}
+    @forelse ($tasks as $task)
+        <div class="py-3 border-b border-gray-100 last:border-0">
+            <p class="text-sm text-gray-900">{{ $task->title }}</p>
+        </div>
+    @empty
+        <p class="text-sm text-gray-500">No tasks yet. Task management arrives in Day 2.</p>
+    @endforelse
+</div>
+@endsection
