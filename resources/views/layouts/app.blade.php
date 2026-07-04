@@ -18,10 +18,14 @@
                     <a href="{{ route('projects.index') }}" class="text-sm text-gray-600 hover:text-gray-900">
                         Projects
                     </a>
+<!-- 
+                    <a href="{{ route('organisations.create') }}">Create organisation</a> -->
+                    
+
                 @endauth
             </div>
 
-            @auth
+                @auth
                 <div class="flex items-center gap-4">
                     @php $userOrganisations = auth()->user()->organisations()->get(); @endphp
 
@@ -40,6 +44,10 @@
                                 @endforeach
                             </select>
                         </form>
+                    @else
+                        <a href="{{ route('organisations.create') }}" class="text-sm text-gray-600 hover:text-gray-900">
+                            Create organisation
+                        </a>
                     @endif
 
                     <form method="POST" action="{{ route('logout') }}">

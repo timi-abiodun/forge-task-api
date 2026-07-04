@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebAuthController;
 use App\Http\Controllers\OrganisationSwitchController;
 use App\Http\Controllers\WebProjectController;
+use App\Http\Controllers\WebOrganisationController;
+
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -40,7 +42,13 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->post('/organisations/switch', [OrganisationSwitchController::class, 'switch'])
     ->name('organisations.switch');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/organisations/create', [WebOrganisationController::class, 'create'])->name('organisations.create');
+    Route::post('/organisations', [WebOrganisationController::class, 'store'])->name('organisations.store');
+});
+
 Route::middleware(['auth', 'active_org'])->group(function () {
+
     Route::get('/projects', [WebProjectController::class, 'index'])->name('projects.index');
     Route::get('/projects/create', [WebProjectController::class, 'create'])->name('projects.create');
     Route::post('/projects', [WebProjectController::class, 'store'])->name('projects.store');
