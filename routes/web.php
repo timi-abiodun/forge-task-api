@@ -6,6 +6,7 @@ use App\Http\Controllers\OrganisationSwitchController;
 use App\Http\Controllers\WebProjectController;
 use App\Http\Controllers\WebOrganisationController;
 use App\Http\Controllers\WebTaskController;
+use App\Http\Controllers\WebAttachmentController;
 
 
 // Route::get('/', function () {
@@ -65,5 +66,10 @@ Route::middleware(['auth', 'active_org'])->group(function () {
     Route::put('/tasks/{task}', [WebTaskController::class, 'update'])->name('tasks.update');
     Route::delete('/tasks/{task}', [WebTaskController::class, 'destroy'])->name('tasks.destroy');
 
+    Route::post('/tasks/{task}/attachments', [WebAttachmentController::class, 'store'])->name('attachments.store');
+    Route::get('/tasks/{task}/attachments/{attachment}/download', [WebAttachmentController::class, 'download'])->name('attachments.download');
+    Route::delete('/tasks/{task}/attachments/{attachment}', [WebAttachmentController::class, 'destroy'])->name('attachments.destroy');
+
 });
+
 
