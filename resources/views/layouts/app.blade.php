@@ -44,6 +44,9 @@
                                 @endforeach
                             </select>
                         </form>
+                        <a href="{{ route('organisations.create') }}" class="text-sm text-gray-600 hover:text-gray-900">
+                            + New org
+                        </a>
                     @else
                         <a href="{{ route('organisations.create') }}" class="text-sm text-gray-600 hover:text-gray-900">
                             Create organisation
