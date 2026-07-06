@@ -4,10 +4,15 @@
 
 @section('content')
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-xl font-semibold text-gray-900">Projects</h1>
+    <!-- <h1 class="text-xl font-semibold text-gray-900">Projects</h1>
+    <a href="{{ route('projects.create') }}" class="bg-gray-900 text-white text-sm rounded px-4 py-2 hover:bg-gray-800">
+        New project
+    </a> -->
+    @can('create', \App\Models\Project::class)
     <a href="{{ route('projects.create') }}" class="bg-gray-900 text-white text-sm rounded px-4 py-2 hover:bg-gray-800">
         New project
     </a>
+@endcan
 </div>
 
 @if (session('status'))

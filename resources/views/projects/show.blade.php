@@ -21,7 +21,7 @@
             </span>
         </div>
 
-        <div class="flex gap-2">
+        <!-- <div class="flex gap-2">
             <a
                 href="{{ route('projects.edit', $project) }}"
                 class="text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded px-3 py-1.5"
@@ -35,16 +35,37 @@
                     Delete
                 </button>
             </form>
+        </div> -->
+        <div class="flex gap-2">
+            @can('update', $project)
+                <a href="{{ route('projects.edit', $project) }}" class="text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded px-3 py-1.5">
+                    Edit
+                </a>
+            @endcan
+            @can('delete', $project)
+                <form method="POST" action="{{ route('projects.destroy', $project) }}" onsubmit="return confirm('Delete this project?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-sm text-red-600 hover:text-red-800 border border-red-200 rounded px-3 py-1.5">
+                        Delete
+                    </button>
+                </form>
+            @endcan
         </div>
     </div>
 </div>
 
 <div class="bg-white p-8 rounded-lg border border-gray-200">
     <div class="flex justify-between items-center mb-4">
-        <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Tasks</h2>
+        <!-- <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Tasks</h2>
         <a href="{{ route('tasks.create', $project) }}" class="text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded px-3 py-1.5">
             New task
-        </a>
+        </a> -->
+        @can('create', \App\Models\Task::class)
+            <a href="{{ route('tasks.create', $project) }}" class="text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded px-3 py-1.5">
+                New task
+            </a>
+        @endcan
     </div>
 
     @forelse ($tasks as $task)
