@@ -53,6 +53,36 @@
                         </a>
                     @endif
 
+                    @auth
+                        @php $unread = auth()->user()->unreadNotifications; @endphp
+                        <details class="relative">
+                            <summary class="list-none cursor-pointer text-sm text-gray-600 hover:text-gray-900">
+                                Notifications
+                                @if ($unread->count() > 0)
+                                    <span class="ml-1 inline-flex items-center justify-center bg-red-600 text-white text-xs rounded-full h-5 w-5">
+                                        {{ $unread->count() }}
+                                    </span>
+                                @endif
+                            </summary>
+                            <div class="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                                @forelse (auth()->user()->notifications()->latest()->take(10)->get() as $notification)
+                                    <div class="px-4 py-3 border-b border-gray-100 last:border-0 {{ $notification->read_at ? '' : 'bg-gray-50' }}">
+                                        <p class="text-sm text-gray-900">{{ $notification->data['task_name'] ?? 'Notification' }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                        @if (!$notification->read_at)
+                                            <form method="POST" action="{{ route('notifications.read', $notification) }}" class="mt-1">
+                                                @csrf
+                                                <button type="submit" class="text-xs text-gray-500 underline">Mark read</button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                @empty
+                                    <p class="px-4 py-6 text-sm text-gray-500 text-center">No notifications.</p>
+                                @endforelse
+                            </div>
+                        </details>
+                    @endauth
+
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-sm text-gray-600 hover:text-gray-900">
