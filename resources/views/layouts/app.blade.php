@@ -18,6 +18,9 @@
                     <a href="{{ route('projects.index') }}" class="text-sm text-gray-600 hover:text-gray-900">
                         Projects
                     </a>
+                    @can('viewAny', \App\Models\Invitation::class)
+                        <a href="{{ route('invitations.index') }}" class="text-sm text-gray-600 hover:text-gray-900">Invitations</a>
+                    @endcan
 <!-- 
                     <a href="{{ route('organisations.create') }}">Create organisation</a> -->
                     

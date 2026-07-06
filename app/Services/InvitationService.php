@@ -160,4 +160,79 @@ class InvitationService
             ->paginate(10);
     }
 
+
+
+    /**
+     * Accept an invitation and prepare password setup for newly created users.
+     *
+     * This does not replace acceptInvitation(); the API path remains unchanged.
+     * The web layer uses this method so new-user password setup can happen without
+     * touching the existing tested logic.
+     *
+     * @param string $token The unique invitation token.
+     * @return array{membership: OrganisationMembership, user: User, is_new_user: bool, reset_token: ?string}
+     */
+
+    public function acceptInvitationWithPasswordSetup(string $token): array
+    {
+        $wasNewUser = false;
+        $acceptedUser = null;
+
+        $membership = DB::transaction(function () use ($token, &$wasNewUser, &$acceptedUser) {
+            $invitation = Invitation::where('token', $token)->firstOrFail();
+
+            if ($invitation->status !== InvitationStatus::PENDING) {
+                throw ValidationException::withMessages([
+                    'invitation' => ['This invitation has already been processed.'],
+                ]);
+            }
+
+            if ($invitation->expires_at->isPast()) {
+                throw ValidationException::withMessages([
+                    'invitation' => ['This invitation has expired.'],
+                ]);
+            }
+
+            $user = User::where('email', $invitation->email)->first();
+
+            if (!$user) {
+                $wasNewUser = true;
+                $user = User::create([
+                    'email' => $invitation->email,
+                    'first_name' => 'Invited',
+                    'last_name' => 'User',
+                    'password' => bcrypt(Str::random(32)),
+                ]);
+            }
+
+            $acceptedUser = $user;
+
+            $membership = OrganisationMembership::create([
+                'user_id' => $user->id,
+                'organisation_id' => $invitation->organisation_id,
+                'role' => $invitation->role,
+                'invited_by' => $invitation->invited_by,
+            ]);
+
+            $invitation->update([
+                'status' => InvitationStatus::ACCEPTED->value,
+                'accepted_by' => $user->id,
+                'accepted_at' => now(),
+            ]);
+
+            return $membership;
+        });
+
+        $resetToken = $wasNewUser
+            ? app('auth.password.broker')->createToken($acceptedUser)
+            : null;
+
+        return [
+            'membership' => $membership,
+            'user' => $acceptedUser,
+            'is_new_user' => $wasNewUser,
+            'reset_token' => $resetToken,
+        ];
+    }
+
 }

@@ -7,6 +7,8 @@ use App\Http\Controllers\WebProjectController;
 use App\Http\Controllers\WebOrganisationController;
 use App\Http\Controllers\WebTaskController;
 use App\Http\Controllers\WebAttachmentController;
+use App\Http\Controllers\WebInvitationController;
+
 
 
 // Route::get('/', function () {
@@ -69,7 +71,24 @@ Route::middleware(['auth', 'active_org'])->group(function () {
     Route::post('/tasks/{task}/attachments', [WebAttachmentController::class, 'store'])->name('attachments.store');
     Route::get('/tasks/{task}/attachments/{attachment}/download', [WebAttachmentController::class, 'download'])->name('attachments.download');
     Route::delete('/tasks/{task}/attachments/{attachment}', [WebAttachmentController::class, 'destroy'])->name('attachments.destroy');
+    
+
+    // Admin-side 
+    Route::get('/invitations', [WebInvitationController::class, 'index'])->name('invitations.index');
+    Route::get('/invitations/create', [WebInvitationController::class, 'create'])->name('invitations.create');
+    Route::post('/invitations', [WebInvitationController::class, 'store'])->name('invitations.store');
+    Route::delete('/invitations/{invitation}', [WebInvitationController::class, 'destroy'])->name('invitations.destroy');
+    Route::post('/invitations/{invitation}/resend', [WebInvitationController::class, 'resend'])->name('invitations.resend');
+
+    
+
 
 });
+// Public - no auth needed
+Route::get('/invite/{token}', [WebInvitationController::class, 'show'])->name('invitations.public.show');
+Route::post('/invite/{token}/accept', [WebInvitationController::class, 'accept'])->name('web.invitations.accept');
+Route::post('/invite/{token}/reject', [WebInvitationController::class, 'reject'])->name('web.invitations.reject');
 
-
+// New-account password setup - public, token-gated by Laravel's password broker
+Route::get('/password/set', [WebInvitationController::class, 'showSetPassword'])->name('password.set');
+Route::post('/password/set', [WebInvitationController::class, 'submitSetPassword'])->name('password.set.submit');

@@ -6,7 +6,7 @@ You have been invited by **{{ $invitation->sender->fullName }}** to join the org
 ### Your Assigned Role
 You have been assigned the role of: **{{ $invitation->role->value }}**.
 
-<x-mail::button :url="route('invitations.accept', ['token' => $invitation->token])">
+<x-mail::button :url="route('invitations.public.show', ['token' => $invitation->token])">
 Accept Invitation
 </x-mail::button>
 
