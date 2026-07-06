@@ -40,15 +40,19 @@
 </div>
 
 <div class="bg-white p-8 rounded-lg border border-gray-200">
-    <h2 class="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Tasks</h2>
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Tasks</h2>
+        <a href="{{ route('tasks.create', $project) }}" class="text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded px-3 py-1.5">
+            New task
+        </a>
+    </div>
 
-    {{-- NOTE: assumes Task has a `title` field - unverified, adjust if wrong --}}
     @forelse ($tasks as $task)
-        <div class="py-3 border-b border-gray-100 last:border-0">
-            <p class="text-sm text-gray-900">{{ $task->title }}</p>
-        </div>
+        <a href="{{ route('tasks.show', $task) }}" class="block py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
+            <p class="text-sm text-gray-900">{{ $task->name }}</p>
+        </a>
     @empty
-        <p class="text-sm text-gray-500">No tasks yet. Task management arrives in Day 2.</p>
+        <p class="text-sm text-gray-500">No tasks yet.</p>
     @endforelse
 </div>
 @endsection

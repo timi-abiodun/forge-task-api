@@ -5,6 +5,7 @@ use App\Http\Controllers\WebAuthController;
 use App\Http\Controllers\OrganisationSwitchController;
 use App\Http\Controllers\WebProjectController;
 use App\Http\Controllers\WebOrganisationController;
+use App\Http\Controllers\WebTaskController;
 
 
 // Route::get('/', function () {
@@ -56,4 +57,13 @@ Route::middleware(['auth', 'active_org'])->group(function () {
     Route::get('/projects/{project}/edit', [WebProjectController::class, 'edit'])->name('projects.edit');
     Route::put('/projects/{project}', [WebProjectController::class, 'update'])->name('projects.update');
     Route::delete('/projects/{project}', [WebProjectController::class, 'destroy'])->name('projects.destroy');
+    
+    Route::get('/projects/{project}/tasks/create', [WebTaskController::class, 'create'])->name('tasks.create');
+    Route::post('/projects/{project}/tasks', [WebTaskController::class, 'store'])->name('tasks.store');
+    Route::get('/tasks/{task}', [WebTaskController::class, 'show'])->name('tasks.show');
+    Route::get('/tasks/{task}/edit', [WebTaskController::class, 'edit'])->name('tasks.edit');
+    Route::put('/tasks/{task}', [WebTaskController::class, 'update'])->name('tasks.update');
+    Route::delete('/tasks/{task}', [WebTaskController::class, 'destroy'])->name('tasks.destroy');
+
 });
+
