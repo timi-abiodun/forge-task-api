@@ -35,8 +35,6 @@ class SendTaskCreatedNotification implements ShouldQueue
         }
 
         // Notify the assignee too, but skip duplicate self-notifications.
-        // The same idempotency rule applies here to avoid repeated sends if
-        // the same event is dispatched twice within the dedupe window.
         if ($event->task->assignee && $event->task->assignee->id !== $event->assigner->id) {
             if ($this->shouldSend($event->task->id, $event->task->assignee->id, $event->assigner->id, 'task-created')) {
                 $event->task->assignee->notify(new TaskAssigned($event->task, $event->assigner));
