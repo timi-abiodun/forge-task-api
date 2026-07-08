@@ -68,6 +68,24 @@
             >
         </div>
 
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Assigned to</label>
+            <select
+                name="assigned_to"
+                class="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                @disabled($restricted)
+            >
+                <option value="" @selected(old('assigned_to', $task->assigned_to) === null || old('assigned_to', $task->assigned_to) === '')>Unassigned</option>
+
+                @foreach ($task->project?->organisation?->users ?? [] as $user)
+                    <option
+                        value="{{ $user->id }}"
+                        @selected(old('assigned_to', $task->assigned_to) == $user->id)
+                    >{{ $user->first_name }} {{ $user->last_name }}</option>
+                @endforeach
+            </select>
+        </div>
+
         <button type="submit" class="w-full bg-gray-900 text-white rounded py-2 text-sm font-medium hover:bg-gray-800">
             Save changes
         </button>

@@ -49,6 +49,9 @@ class UpdateTaskRequest extends FormRequest
                 'name' => ['prohibited'],
                 'description' => ['prohibited'],
                 'due_date' => ['prohibited'],
+
+                // prevent reassignment from the restricted (assignee-only) branch
+                'assigned_to' => ['prohibited'],
             ];
         }
 
@@ -57,7 +60,10 @@ class UpdateTaskRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::enum(TaskStatus::class)],
-            'due_date' => ['sometimes', 'nullable', 'date_format:Y-m-d', 'after_or_equal:today']
+            'due_date' => ['sometimes', 'nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
+
+            // allow reassignment via update endpoint for users with access
+            'assigned_to' => ['sometimes', 'nullable', 'uuid', 'exists:users,id'],
         ];
     }
 }

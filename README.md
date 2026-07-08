@@ -82,9 +82,8 @@ The API's `acceptInvitation()` creates a `User` with an unusable random password
 ### Known limitations
 
 - **Email delivery (Resend):** sandbox mode only delivers to the Resend account's own verified email. Sending to arbitrary invitees requires verifying a sending domain at resend.com/domains.
-- **`InvitationPolicy::update()`** has no organisation-scope check (unlike `ProjectPolicy`/`TaskPolicy`), so it's less strict than the rest of the authorization layer.
-- **Task reassignment** isn't exposed in the UI — `UpdateTaskRequest`'s validation rules never include `assigned_to` in either branch, so reassignment isn't actually possible through that endpoint yet.
 - The task edit form's "restricted fields for assignee-only users" logic uses a heuristic (checks for `MembershipRole::OWNER` specifically) rather than the real `hasAdministrativeAccess()` check, since that trait wasn't available when this was built. Fails safe either way — the server-side `FormRequest` is the real enforcement point — but the UI may not perfectly match role logic for roles other than owner/member.
+
 
 ## Requirements
 

@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\Invitation;
 use App\Models\User;
 use App\Traits\ChecksOrganisationRole;
 
@@ -28,8 +29,16 @@ class InvitationPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user): bool
+    public function update(User $user, Invitation $invitation): bool
     {
-        return $this->hasAdministrativeAccess();
+        $currentOrg = request()->attributes->get('organisation');
+
+        if (!$currentOrg) {
+            return false;
+        }
+
+        return $this->hasAdministrativeAccess()
+            && $invitation->organisation_id === $currentOrg->id;
     }
 }
+
