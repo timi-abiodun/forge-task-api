@@ -82,7 +82,8 @@ The API's `acceptInvitation()` creates a `User` with an unusable random password
 ### Known limitations
 
 - **Email delivery (Resend):** sandbox mode only delivers to the Resend account's own verified email. Sending to arbitrary invitees requires verifying a sending domain at resend.com/domains.
-- The task edit form's "restricted fields for assignee-only users" logic uses a heuristic (checks for `MembershipRole::OWNER` specifically) rather than the real `hasAdministrativeAccess()` check, since that trait wasn't available when this was built. Fails safe either way — the server-side `FormRequest` is the real enforcement point — but the UI may not perfectly match role logic for roles other than owner/member.
+- The task edit form uses a UI heuristic to disable restricted fields for assignee-only users. Disabled fields are not submitted by the browser, but the server-side `UpdateTaskRequest` is the real enforcement point, so this fails safe even if the UI logic doesn’t perfectly match every role edge case.
+
 
 
 ## Requirements
