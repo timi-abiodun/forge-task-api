@@ -8,6 +8,7 @@ use App\Http\Controllers\WebOrganisationController;
 use App\Http\Controllers\WebTaskController;
 use App\Http\Controllers\WebAttachmentController;
 use App\Http\Controllers\WebInvitationController;
+use App\Http\Controllers\NotificationWebController;
 
 
 
@@ -81,7 +82,8 @@ Route::middleware(['auth', 'active_org'])->group(function () {
     Route::post('/invitations/{invitation}/resend', [WebInvitationController::class, 'resend'])->name('invitations.resend');
 
     
-
+    Route::post('/notifications/{notification}/read', [NotificationWebController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationWebController::class, 'markAllRead'])->name('notifications.read-all');
 
 });
 // Public - no auth needed
